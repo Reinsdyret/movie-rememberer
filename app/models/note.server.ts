@@ -5,13 +5,14 @@ export type Note = {
   id: string;
   title: string;
   body: string;
+  url?: string;
   profile_id: string;
 };
 
 export async function getNoteListItems({ userId }: { userId: User["id"] }) {
   const { data } = await supabase
     .from("notes")
-    .select("id, title")
+    .select("id, title, url")
     .eq("profile_id", userId);
 
   return data;
@@ -20,11 +21,12 @@ export async function getNoteListItems({ userId }: { userId: User["id"] }) {
 export async function createNote({
   title,
   body,
+  url,
   userId,
-}: Pick<Note, "body" | "title"> & { userId: User["id"] }) {
+}: Pick<Note, "body" | "title" | "url" >  & { userId: User["id"] }) {
   const { data, error } = await supabase
     .from("notes")
-    .insert({ title, body, profile_id: userId })
+    .insert({ title, body, url, profile_id: userId })
     .select("*")
     .single();
 
@@ -68,6 +70,7 @@ export async function getNote({
       id: data.id,
       title: data.title,
       body: data.body,
+      url: data.url,
     };
   }
 
