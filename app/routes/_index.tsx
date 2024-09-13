@@ -12,7 +12,7 @@ export default function Index() {
               <img
                 className="h-full w-full object-cover"
                 src="https://payload.cargocollective.com/1/11/367710/13568488/CINEMA-CLASSICS-POSTER_RUTGERS_1340_c.jpg"
-                alt="BTS playing on stage with the group leaving in action poses"
+                alt="Cinema classic poster"
               />
               <div className="absolute inset-0 bg-[color:rgba(139,92,246,0.5)] mix-blend-multiply" />
             </div>

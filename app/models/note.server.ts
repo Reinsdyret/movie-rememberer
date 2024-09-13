@@ -6,13 +6,14 @@ export type Note = {
   title: string;
   body: string;
   url?: string;
+  watched?: boolean;
   profile_id: string;
 };
 
 export async function getNoteListItems({ userId }: { userId: User["id"] }) {
   const { data } = await supabase
     .from("notes")
-    .select("id, title, url")
+    .select("id, title, url, watched")
     .eq("profile_id", userId);
 
   return data;
@@ -22,11 +23,12 @@ export async function createNote({
   title,
   body,
   url,
+  watched,
   userId,
-}: Pick<Note, "body" | "title" | "url" >  & { userId: User["id"] }) {
+}: Pick<Note, "body" | "title" | "url" | "watched" >  & { userId: User["id"] }) {
   const { data, error } = await supabase
     .from("notes")
-    .insert({ title, body, url, profile_id: userId })
+    .insert({ title, body, url, watched, profile_id: userId })
     .select("*")
     .single();
 
@@ -35,6 +37,32 @@ export async function createNote({
   }
 
   return null;
+}
+
+export async function toggleWatchedNote({
+  id,
+  userId
+}: Pick<Note, "id"> & {userId: User["id"] }) {
+  const { data, error } = await supabase
+    .from("notes")
+    .select("*")
+    .eq("profile_id", userId)
+    .eq("id", id)
+    .single();
+
+  if (!error) {
+    const { error } = await supabase
+      .from("notes")
+      .update({ watched: !data.watched })
+      .eq("id", id);
+
+    if (!error) {
+      return true;
+    }
+  }
+
+  return null;
+
 }
 
 export async function deleteNote({
@@ -71,6 +99,7 @@ export async function getNote({
       title: data.title,
       body: data.body,
       url: data.url,
+      watched: data.watched,
     };
   }
 
