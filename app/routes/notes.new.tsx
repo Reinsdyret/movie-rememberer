@@ -20,6 +20,10 @@ export const action: ActionFunction = async ({ request }) => {
     return json({ errors: { body: "Body is required" } }, { status: 400 });
   }
 
+  if (typeof url !== "string") {
+    return json({ errors: { url: "Image url needs to be string" } }, {status: 400 });
+  }
+
   const note = await createNote({ title, body, url, userId });
   return redirect(`/notes/${note.id}`);
 };

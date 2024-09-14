@@ -3,14 +3,10 @@ import { json, redirect } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import type { Note } from "~/models/note.server";
 import { deleteNote, getNote, toggleWatchedNote } from "~/models/note.server";
-import { getRating, Rating } from "~/models/rating.server";
+import { deleteRating, getRating, Rating } from "~/models/rating.server";
 import { requireUserId } from "~/session.server";
 import invariant from "tiny-invariant";
-import Star1 from "~/components/Star1";
-import Star2 from "~/components/Star2";
-import Star3 from "~/components/Star3";
-import Star4 from "~/components/Star4";
-import Star5 from "~/components/Star5";
+import { Star0, Star1, Star2, Star3, Star4, Star5 } from "~/components/Stars";
 
 type LoaderData = {
   note: Note;
@@ -26,7 +22,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  const rating = await getRating({ userId, id: params.noteId, })
+  const rating = await getRating({ userId, }, params.noteId);
 
   return json({ note, rating });
 }
@@ -42,9 +38,18 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect("/notes");
   }
 
+  
+
   if (formData.get('action') === 'toggleWatched') {
-    await toggleWatchedNote({ userId, id: params.noteId });
-    return redirect(`/notes/${params.noteId}`);
+    const watched = formData.get("watched") === "true";
+    await toggleWatchedNote({ userId, id: params.noteId }); 
+
+    if (watched) {
+      await deleteRating({userId, movie_id: params.noteId});
+      return redirect(`/notes/${params.noteId}`);
+    }
+    
+    return redirect(`/notes/rate/${params.noteId}`);
   }
 
   return redirect("/notes");
@@ -69,6 +74,7 @@ export default function NoteDetailsPage() {
         </button>
       </Form>
       <Form method="post" className="mt-4">
+        <input type="hidden" name="watched" value={data.note.watched ? "true" : "false"} />
         <input type="hidden" name="action" value="toggleWatched" />
         <button
           type="submit"
@@ -77,10 +83,26 @@ export default function NoteDetailsPage() {
           Toggle Watched
         </button>
       </Form>
-      {(data.rating == null ? "null"
-        : getRatingClass(data.rating.rating))}
+      <hr className="my-3" />
+      {displayRating(data.rating)}
       </div>
   );
+}
+
+function displayRating(rating: Rating) {
+  
+  if (rating != null) {
+    return (
+      <div className="flex items-center justify-center">
+        <div className="border w-72 content-center bg-slate-400 rounded-lg">
+          {getRatingClass(rating.rating)}
+          <p className="text-center px-5 pb-5">{rating.comment}</p>
+        </div>
+      </div>
+    )
+  }
+
+  return "";
 }
 
 function getRatingClass(rating: number) {
@@ -90,6 +112,6 @@ function getRatingClass(rating: number) {
     case 3: { return <Star3 /> }
     case 4: { return <Star4 /> }
     case 5: { return <Star5 /> }
-    default: { return null; }
+    default: { return <Star0 /> }
   }
 }
