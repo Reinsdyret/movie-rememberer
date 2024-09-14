@@ -5,6 +5,7 @@ import type { Note } from "~/models/note.server";
 import { deleteNote, getNote, toggleWatchedNote } from "~/models/note.server";
 import { requireUserId } from "~/session.server";
 import invariant from "tiny-invariant";
+import Star1 from "~/components/Star1";
 
 type LoaderData = {
   note: Note;
@@ -67,6 +68,8 @@ export default function NoteDetailsPage() {
         >
           Toggle Watched
         </button>
-      </Form>    </div>
+      </Form>    
+      <Star1 />
+      </div>
   );
 }
