@@ -3,12 +3,18 @@ import { json, redirect } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import type { Note } from "~/models/note.server";
 import { deleteNote, getNote, toggleWatchedNote } from "~/models/note.server";
+import { getRating, Rating } from "~/models/rating.server";
 import { requireUserId } from "~/session.server";
 import invariant from "tiny-invariant";
 import Star1 from "~/components/Star1";
+import Star2 from "~/components/Star2";
+import Star3 from "~/components/Star3";
+import Star4 from "~/components/Star4";
+import Star5 from "~/components/Star5";
 
 type LoaderData = {
   note: Note;
+  rating: Rating;
 };
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -20,7 +26,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  return json({ note });
+  const rating = await getRating({ userId, id: params.noteId, })
+
+  return json({ note, rating });
 }
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -48,7 +56,7 @@ export default function NoteDetailsPage() {
   return (
     <div>
       <h3 className="text-2xl font-bold">{data.note.title}</h3>
-      <img src={data.note.url} class="max-h-52 max-w-52 float-right" />
+      <img src={data.note.url} className="max-h-52 max-w-52 float-right" />
       <p className="py-6">{data.note.body}</p>
       <hr className="my-4" />
       <Form method="post">
@@ -68,8 +76,20 @@ export default function NoteDetailsPage() {
         >
           Toggle Watched
         </button>
-      </Form>    
-      <Star1 />
+      </Form>
+      {(data.rating == null ? "null"
+        : getRatingClass(data.rating.rating))}
       </div>
   );
+}
+
+function getRatingClass(rating: number) {
+  switch(rating) {
+    case 1: { return <Star1 /> }
+    case 2: { return <Star2 /> }
+    case 3: { return <Star3 /> }
+    case 4: { return <Star4 /> }
+    case 5: { return <Star5 /> }
+    default: { return null; }
+  }
 }

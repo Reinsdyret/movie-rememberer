@@ -24,8 +24,6 @@ export default function NotesPage() {
     if (!element.watched) {not_watched.push(element);}
     else {watched.push(element);}
   });
-  console.log(not_watched);
-  console.log(watched);
 
   return (
     <div className="flex h-full min-h-screen flex-col">
