@@ -1,5 +1,5 @@
 # My site to remember movies I need to watch
-HOSTED HERE: https://aesthetic-kheer-83769a.netlify.app/
+HOSTED HERE: https://movie-rememberer.netlify.app/
 
 
 
