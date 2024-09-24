@@ -22,7 +22,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  const rating = await getRating({ userId, }, params.noteId);
+  const rating = await getRating({ userId }, params.noteId);
 
   return json({ note, rating });
 }
@@ -38,17 +38,17 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect("/notes");
   }
 
-  
+
 
   if (formData.get('action') === 'toggleWatched') {
     const watched = formData.get("watched") === "true";
-    await toggleWatchedNote({ userId, id: params.noteId }); 
+    await toggleWatchedNote({ userId, id: params.noteId });
 
     if (watched) {
-      await deleteRating({userId, movie_id: params.noteId});
+      await deleteRating({ userId, movie_id: params.noteId });
       return redirect(`/notes/${params.noteId}`);
     }
-    
+
     return redirect(`/notes/rate/${params.noteId}`);
   }
 
@@ -85,12 +85,12 @@ export default function NoteDetailsPage() {
       </Form>
       <hr className="my-3" />
       {displayRating(data.rating)}
-      </div>
+    </div>
   );
 }
 
 function displayRating(rating: Rating) {
-  
+
   if (rating != null) {
     return (
       <div className="flex items-center justify-center">
@@ -106,7 +106,7 @@ function displayRating(rating: Rating) {
 }
 
 function getRatingClass(rating: number) {
-  switch(rating) {
+  switch (rating) {
     case 1: { return <Star1 /> }
     case 2: { return <Star2 /> }
     case 3: { return <Star3 /> }
