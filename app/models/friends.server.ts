@@ -1,8 +1,17 @@
 import type { User } from "./user.server";
-import { getProfileById, supabase } from "./user.server";
+import { getProfileByEmail, getProfileById, supabase } from "./user.server";
 
 export type Friends = {
   friends: [string];
+}
+
+export type FriendRequest = {
+  id: string;
+  email: string;
+}
+
+export type FriendRequests = {
+  friends: FriendRequest[];
 }
 
 export async function getFriends({
@@ -44,14 +53,27 @@ export async function getFriendRequests({
 }: { userId: User["id"] }) {
   const { data, error } = await supabase
     .from("friend_requests")
-    .select("*")
-    .eq("profile2_id", userId);
+    .select("profile1_id")
+    .eq("profile2_id", userId)
+    .eq("state", false);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data;
+
+  console.log('data:', data);
+
+  let requests = [];
+
+  for (const item of data) {
+    const email = await getFriendMail(item.profile1_id);
+    requests.push({ id: item.profile1_id, email: email });
+  }
+
+  console.log('requests:', requests);
+
+  return { friends : requests };
 }
 
 export async function acceptFriendRequest({
@@ -61,8 +83,8 @@ export async function acceptFriendRequest({
   let { data, error } = await supabase
     .from("friend_requests")
     .update({ state: true })
-    .eq("profile1_id", userId)
-    .eq("profile2_id", requestId);
+    .eq("profile2_id", userId)
+    .eq("profile1_id", requestId);
 
   if (error) {
     throw new Error(error.message);
@@ -93,6 +115,7 @@ export async function rejectFriendRequest({
 export async function addFriend({
   userId,
 }: { userId: User["id"] }, friendId: string) {
+
   const { data, error } = await supabase
     .from("friend_requests")
     .insert({ profile1_id: userId, profile2_id: friendId, state: false })
@@ -102,6 +125,8 @@ export async function addFriend({
   if (!error) {
     return data;
   }
+
+  console.log(error);
 
   return null;
 }

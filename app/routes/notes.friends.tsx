@@ -2,18 +2,13 @@ import { ActionFunction, json, LoaderFunctionArgs, redirect } from "@remix-run/n
 import { Form, useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect, useRef } from "react";
 import invariant from "tiny-invariant";
-import { addFriend, Friends, getFriends, getFriendRequests, acceptFriendRequest, rejectFriendRequest } from "~/models/friends.server"
+import { addFriend, Friends, getFriends, getFriendRequests, acceptFriendRequest, rejectFriendRequest, FriendRequests, FriendRequest } from "~/models/friends.server"
 import { getProfileByEmail } from "~/models/user.server";
 import { requireUserId } from "~/session.server";
 
 type LoaderData = {
   friends: Friends;
-  friendRequests: FriendRequest[];
-}
-
-type FriendRequest = {
-  id: string;
-  name: string;
+  friendRequests: FriendRequests;
 }
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -23,6 +18,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const friendRequests = await getFriendRequests({ userId });
 
   if (!friends) {
+    throw new Response("Response not found", { status: 404 });
+  }
+
+  if (!friendRequests) {
     throw new Response("Response not found", { status: 404 });
   }
 
@@ -37,9 +36,12 @@ export const action: ActionFunction = async ({ request, params }) => {
   const requestId = formData.get("requestId") as string | undefined;
   const action = formData.get("action") as string | undefined;
 
+  console.log("hello");
+
   if (email) {
     const friend = await getProfileByEmail(email);
     await addFriend({ userId }, friend?.id);
+    console.log("added friend");
   } else if (requestId && action) {
     if (action === "accept") {
       await acceptFriendRequest({ userId, requestId: requestId.toString() });
@@ -52,8 +54,11 @@ export const action: ActionFunction = async ({ request, params }) => {
 }
 
 export default function FriendsPage() {
-  const { friends, friendRequests } = useLoaderData<typeof loader>() as LoaderData;
+  const { friends, friendRequests } = useLoaderData<typeof loader>() as unknown as LoaderData;
   const fetcher = useFetcher();
+
+  console.log('friends:', friends);
+  console.log('friendRequests:', friendRequests);
 
   let formRef = useRef<HTMLFormElement>(null);
 
@@ -71,7 +76,7 @@ export default function FriendsPage() {
               <li key={friend}>{friend}</li>
             ))
           ) : (
-            <li>No friends yet</li>
+            <li key="no-friend-requests">No friends yet</li>
           )}
         </ul>
       </div>
@@ -79,10 +84,10 @@ export default function FriendsPage() {
       <div className="w-1/2 pl-4">
         <h2 className="text-xl font-bold">Friend Requests</h2>
         <ul>
-          {friendRequests.length > 0 ? (
-            friendRequests.map((request: FriendRequest) => (
+          {friendRequests.friends.length > 0 ? (
+            friendRequests.friends.map((request: FriendRequest) => (
               <li key={request.id} className="flex items-center mb-2">
-                <span>{request.name}</span>
+                <span>{request.email}</span>
                 <Form method="post" className="ml-2">
                   <input type="hidden" name="requestId" value={request.id} />
                   <button
@@ -105,7 +110,7 @@ export default function FriendsPage() {
               </li>
             ))
           ) : (
-            <li>No friend requests</li>
+            <li key="no-friend-requests">No friend requests</li>
           )}
         </ul>
       </div>
