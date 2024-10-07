@@ -39,12 +39,63 @@ export async function getFriends({
   return { friends: friendEmails.filter((email): email is string => email !== null) };
 }
 
+export async function getFriendRequests({
+  userId,
+}: { userId: User["id"] }) {
+  const { data, error } = await supabase
+    .from("friend_requests")
+    .select("*")
+    .eq("profile2_id", userId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function acceptFriendRequest({
+  userId,
+  requestId,
+}: { userId: User["id"], requestId: string }) {
+  let { data, error } = await supabase
+    .from("friend_requests")
+    .update({ state: true })
+    .eq("profile1_id", userId)
+    .eq("profile2_id", requestId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return insertFriend(userId, requestId);
+}
+
+export async function rejectFriendRequest({
+  userId,
+  requestId,
+}: { userId: User["id"], requestId: string }) {
+  const { data, error } = await supabase
+    .from("friend_requests")
+    .delete()
+    .eq("profile1_id", userId)
+    .eq("profile2_id", requestId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+
+
 export async function addFriend({
   userId,
 }: { userId: User["id"] }, friendId: string) {
   const { data, error } = await supabase
-    .from("friends")
-    .insert({ profile1_id: userId, profile2_id: friendId })
+    .from("friend_requests")
+    .insert({ profile1_id: userId, profile2_id: friendId, state: false })
     .select("*")
     .single()
 
@@ -61,4 +112,17 @@ async function getFriendMail(userId: string) {
   if (user) return user.email;
 
   return null;
+}
+
+
+async function insertFriend(userId: string, friendId: string) {
+  const { data, error } = await supabase
+    .from("friends")
+    .insert({ profile1_id: userId, profile2_id: friendId });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
 }
