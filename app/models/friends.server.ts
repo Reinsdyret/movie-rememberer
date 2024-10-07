@@ -39,6 +39,22 @@ export async function getFriends({
   return { friends: friendEmails.filter((email): email is string => email !== null) };
 }
 
+export async function addFriend({
+  userId,
+}: { userId: User["id"] }, friendId: string) {
+  const { data, error } = await supabase
+    .from("friends")
+    .insert({ profile1_id: userId, profile2_id: friendId })
+    .select("*")
+    .single()
+
+  if (!error) {
+    return data;
+  }
+
+  return null;
+}
+
 async function getFriendMail(userId: string) {
   const user = await getProfileById(userId);
 
