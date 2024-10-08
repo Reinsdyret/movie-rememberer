@@ -1,4 +1,3 @@
-import { Button } from "@chakra-ui/react";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, Link, NavLink, Outlet, useLoaderData } from "@remix-run/react";
@@ -31,9 +30,6 @@ export default function NotesPage() {
       <Header />
       <main className="flex h-full bg-white">
         <div className="h-full w-80 border-r bg-gray-50">
-          <Link to="friends" className="block p-4 text-xl text-blue-500">
-            <button>Friends</button>
-          </Link>
           <Link to="new" className="block p-4 text-xl text-blue-500">
             + New Note
           </Link>
@@ -97,7 +93,25 @@ function Header() {
       <h1 className="text-3xl font-bold">
         <Link to=".">Notes</Link>
       </h1>
-      <p>{user.email}</p>
+      
+      <Form action="/notes/friends" method="get">
+        <button
+          type="submit"
+          className="rounded bg-slate-600 py-2 px-4 text-blue-100 hover:bg-blue-500 active:bg-blue-600"
+        >
+          Friends
+        </button>
+      </Form>
+
+      <Form action="/notes/recommendations" method="get">
+        <button
+          type="submit"
+          className="rounded bg-slate-600 py-2 px-4 text-blue-100 hover:bg-blue-500 active:bg-blue-600"
+        >
+          Recommendations
+        </button>
+      </Form>
+
       <Form action="/logout" method="post">
         <button
           type="submit"

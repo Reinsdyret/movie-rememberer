@@ -38,7 +38,9 @@ export const action: ActionFunction = async ({ request, params }) => {
     return redirect("/notes");
   }
 
-
+  if (formData.get('recommend') === 'recommend') {
+    return redirect(`/notes/recommend/${params.noteId}`);
+  }
 
   if (formData.get('action') === 'toggleWatched') {
     const watched = formData.get("watched") === "true";
@@ -64,15 +66,19 @@ export default function NoteDetailsPage() {
       <img src={data.note.url} className="max-h-52 max-w-52 float-right" />
       <p className="py-6">{data.note.body}</p>
       <hr className="my-4" />
-      <Form method="post">
-        <input type="hidden" name="action" value="delete" />
-        <button
-          type="submit"
-          className="rounded bg-red-500 py-2 px-4 text-white hover:bg-red-600 focus:bg-red-400"
-        >
-          Delete
-        </button>
-      </Form>
+      
+      {data.note.watched && (
+        <Form method="post" className="mt-4">
+          <input type="hidden" name="recommend" value="recommend" />
+          <button
+            type="submit"
+            className="rounded bg-green-500 py-2 px-4 text-white hover:bg-green-600 focus:bg-green-400"
+          >
+            Recommend
+          </button>
+        </Form>
+      )}
+      
       <Form method="post" className="mt-4">
         <input type="hidden" name="watched" value={data.note.watched ? "true" : "false"} />
         <input type="hidden" name="action" value="toggleWatched" />
@@ -81,6 +87,16 @@ export default function NoteDetailsPage() {
           className="rounded bg-yellow-500 py-2 px-4 text-white hover:bg-yellow-600 focus:bg-yellow-400"
         >
           Toggle Watched
+        </button>
+      </Form>
+      <hr className="my-4" />
+      <Form method="post">
+        <input type="hidden" name="action" value="delete" />
+        <button
+          type="submit"
+          className="rounded bg-red-500 py-2 px-4 text-white hover:bg-red-600 focus:bg-red-400"
+        >
+          Delete
         </button>
       </Form>
       <hr className="my-3" />

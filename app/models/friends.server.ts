@@ -62,16 +62,12 @@ export async function getFriendRequests({
   }
 
 
-  console.log('data:', data);
-
   let requests = [];
 
   for (const item of data) {
     const email = await getFriendMail(item.profile1_id);
     requests.push({ id: item.profile1_id, email: email });
   }
-
-  console.log('requests:', requests);
 
   return { friends : requests };
 }
@@ -125,8 +121,6 @@ export async function addFriend({
   if (!error) {
     return data;
   }
-
-  console.log(error);
 
   return null;
 }
